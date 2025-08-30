@@ -1,0 +1,31 @@
+import moviepy.editor as mp
+import numpy as np
+
+# Rutas de archivos (cámbialas por las de tu compu)
+image_path = "191117A3-363F-4785-85CC-B286D39128D5.jpeg"
+reference_video_path = "v24044gl0000d0cvtbnog65nkm4rkm6g.MP4"
+output_path = "brainrot_final.mp4"
+
+# Cargar imagen y referencia de video
+image_clip = mp.ImageClip(image_path).resize(height=1920)
+ref_video = mp.VideoFileClip(reference_video_path)
+
+# Extraer solo el audio del video de referencia
+audio = ref_video.audio
+
+# Repetir el audio hasta llegar a ~12s
+looped_audio = mp.concatenate_audioclips([audio, audio]).set_duration(12)
+
+# Crear clip de imagen con zoom y vibración para 12s
+image_clip = image_clip.set_duration(12)
+zoomed = image_clip.fx(mp.vfx.resize, 1.05)
+shaking = zoomed.set_position(lambda t: (
+    int(10 * np.sin(20 * t)),  # vibración horizontal
+    int(10 * np.cos(25 * t))   # vibración vertical
+))
+
+# Componer video final con audio loop
+final = mp.CompositeVideoClip([shaking]).set_audio(looped_audio)
+
+# Exportar como mp4 listo
+final.write_videofile(output_path, codech="libx264", audio_codec="aac", fps=30)
